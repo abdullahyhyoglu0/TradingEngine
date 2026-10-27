@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TradingEngine.Api/TradingEngine.Api.csproj" />
+    <Project Path="src/TradingEngine.Application/TradingEngine.Application.csproj" />
+    <Project Path="src/TradingEngine.Domain/TradingEngine.Domain.csproj" />
+    <Project Path="src/TradingEngine.Infrastructure/TradingEngine.Infrastructure.csproj" />
+    <Project Path="src/TradingEngine.MarketData/TradingEngine.MarketData.csproj" />
+    <Project Path="src/TradingEngine.MatchingEngine/TradingEngine.MatchingEngine.csproj" />
+    <Project Path="src/TradingEngine.Realtime/TradingEngine.Realtime.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TradingEngine.IntegrationTests/TradingEngine.IntegrationTests.csproj" />
+    <Project Path="tests/TradingEngine.UnitTests/TradingEngine.UnitTests.csproj" />
+  </Folder>
+</Solution>
