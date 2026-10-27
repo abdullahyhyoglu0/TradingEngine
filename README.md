@@ -1,45 +1,176 @@
 # TradingEngine
 
-Virtual spot trading simulator using public Binance market prices. Balances and orders are simulated; the application does not submit exchange orders or handle real funds.
+**A Real-Time Cryptocurrency Trading Simulation Engine**
 
-## Current implementation
+TradingEngine is a software project focused on building a cryptocurrency trading simulation platform using real market data, backend services, and a modular architecture.
 
-- .NET 9 API with separate Domain, Application, Infrastructure, and API projects.
-- PostgreSQL schema/migrations for accounts, virtual assets, market/limit orders, ledger entries, refresh tokens, price alerts, notifications, and favorites.
-- Email/password registration and login, password hashing, short-lived JWT access tokens, HttpOnly refresh cookies with rotation and reuse detection, and account roles/status.
-- Configurable virtual starting credit and commission. Market orders use server-fetched prices; limit orders reserve funds/assets, match against the common live ticker feed, and release reserves on cancellation/fill.
-- One shared Binance public WebSocket feed, published to authenticated SignalR market groups. Redis backs ticker cache and SignalR scale-out when `ConnectionStrings:Redis` is configured; local development uses in-memory cache/backplane.
-- REST candle history, cached market tickers, wallet, portfolio, orders, trades, favorites, alerts, and notifications.
-- Responsive React/TypeScript terminal with WebSocket-updated candles, SMA/EMA/RSI/MACD/Bollinger overlays/panes, limit orders/cancellation, price alerts, notifications, portfolio, and wallet.
+The long-term goal is to provide a realistic paper-trading experience where users can trade cryptocurrencies with virtual funds, monitor market prices, track portfolio performance, and explore trading activity without risking real money.
 
-Implemented admin scope includes user search, virtual credits, account suspension/reactivation, credit request review, notifications, and immutable-from-API audit records. Admin role assignment is deliberately not available through public registration: after creating the intended account, an operator must use controlled database access to set that account's `Role` to `Admin`. Example SQL: `UPDATE "Accounts" SET "Role" = 'Admin' WHERE "Email" = 'operator@example.com';` then sign in again to receive the Admin claim.
+> **Project status:** Under active development.
 
-Email verification, password reset, alert edit/re-enable, richer admin reports/settings, and external push/email notifications are not implemented. REST polling remains for the broad 24-hour market list and historical candles; selected chart prices and execution matching use the shared WebSocket feed. This is a development foundation, not a production financial service.
+## Overview
 
-## Run locally
+TradingEngine aims to combine market data processing, trading operations, portfolio management, and real-time updates into a modular trading simulation system.
 
-Requirements: .NET 9 SDK, Node 22+, PostgreSQL 16+. Redis is optional locally; set `ConnectionStrings__Redis=localhost:6379` to use the Redis cache and SignalR backplane.
+The project is designed with separation of concerns in mind, making individual components easier to develop, test, and maintain.
 
-1. Start PostgreSQL and configure `ConnectionStrings__TradingDb` or update `src/TradingEngine.Api/appsettings.json`.
-2. Set a local-only signing secret: `dotnet user-secrets --project src/TradingEngine.Api set "Jwt:SigningKey" "your-local-random-secret-at-least-32-bytes"`.
-3. Apply the schema: `dotnet ef database update --project src/TradingEngine.Infrastructure --startup-project src/TradingEngine.Api`.
-4. Start the API: `dotnet run --project src/TradingEngine.Api --urls http://localhost:5000`.
-5. In another terminal: `cd frontend`, `npm ci`, `npm run dev`.
+## Planned Features
 
-Set `VITE_API_URL` in `frontend/.env.local` if the API uses another address. OpenAPI JSON is available at `/openapi/v1.json` in Development.
+- **Real Market Data** — Retrieve and process cryptocurrency market prices.
+- **Virtual Trading** — Simulate buy and sell orders without real-money transactions.
+- **Portfolio Management** — Track virtual balances, assets, and portfolio performance.
+- **Trading Engine** — Build the core components responsible for processing trading operations.
+- **Real-Time Updates** — Deliver market and trading updates to connected clients.
+- **Market Charts** — Visualize cryptocurrency price movements and historical data.
+- **Order Management** — Track order states and trading activity.
+- **Testing** — Support unit and integration testing of backend components.
 
-## Docker
+*Features are planned or under development unless explicitly implemented in the current codebase.*
 
-Copy `.env.example` to `.env`, replace the example secrets, then run `docker compose up --build`. The compose database is exposed on host port `55432`; apply the schema with `dotnet ef database update --project src/TradingEngine.Infrastructure --startup-project src/TradingEngine.Api --connection "Host=localhost;Port=55432;Database=tradingengine;Username=postgres;Password=replace-with-a-local-database-password"` (use the value in `POSTGRES_PASSWORD`). Redis is started alongside the API.
+## Architecture
 
-## Build and tests
+The repository is organized into separate projects to support modular development.
 
-```powershell
-dotnet build TradingEngine.slnx
-dotnet test TradingEngine.slnx
-cd frontend; npm ci; npm run build
+```text
+TradingEngine/
+├── src/
+│   ├── TradingEngine.Domain/
+│   ├── TradingEngine.Application/
+│   ├── TradingEngine.Infrastructure/
+│   ├── TradingEngine.MarketData/
+│   ├── TradingEngine.MatchingEngine/
+│   └── TradingEngine.Realtime/
+├── tests/
+│   ├── TradingEngine.UnitTests/
+│   └── TradingEngine.IntegrationTests/
+├── frontend/
+├── docs/
+├── docker-compose.yml
+├── .dockerignore
+├── .gitignore
+└── TradingEngine.slnx
 ```
 
-## Financial behavior
+### Project Responsibilities
 
-Only the API reads market prices for execution. Financial values use `decimal`; USD balances, asset quantities, orders, and append-only ledger rows are saved in a PostgreSQL transaction. Reusing an account-scoped idempotency key returns the recorded order. Every account receives the configured virtual credit once at registration. No endpoint lets a user directly edit their balance.
+| Project | Responsibility |
+|---|---|
+| `TradingEngine.Domain` | Core domain models and business rules |
+| `TradingEngine.Application` | Application use cases and orchestration |
+| `TradingEngine.Infrastructure` | External integrations and persistence |
+| `TradingEngine.MarketData` | Market data processing services |
+| `TradingEngine.MatchingEngine` | Core matching and trading engine components |
+| `TradingEngine.Realtime` | Real-time communication components |
+| `TradingEngine.UnitTests` | Unit tests |
+| `TradingEngine.IntegrationTests` | Integration tests |
+
+The architecture and responsibilities may evolve as the project develops.
+
+## Technology Stack
+
+- **C# / .NET 9**
+- **ASP.NET Core ecosystem**
+- **Docker & Docker Compose**
+- **PostgreSQL**
+- **Real-time communication technologies**
+- **Frontend application**
+- **Unit and integration testing**
+
+## Getting Started
+
+### Prerequisites
+
+Install the following tools:
+
+- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- [Git](https://git-scm.com/)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+A PostgreSQL instance may be required depending on the selected configuration.
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/abdullahyhyoglu0/TradingEngine.git
+cd TradingEngine
+```
+
+### 2. Configure environment variables
+
+Create your local environment configuration based on `.env.example`.
+
+Use your own development secrets and database credentials. Never commit real credentials, API keys, or signing keys to version control.
+
+Example configuration variables:
+
+```dotenv
+JWT_SIGNING_KEY=your-local-development-secret
+POSTGRES_PASSWORD=your-local-database-password
+Trading__StartingBalance=10000
+Trading__FeeRate=0.001
+```
+
+These values are examples, not production credentials. Check the current Docker Compose and application configuration to determine which variables are required.
+
+### 3. Start the infrastructure
+
+If the Docker Compose configuration is ready for local development, start the configured services with:
+
+```bash
+docker compose up -d --build
+```
+
+### 4. Build the solution
+
+```bash
+dotnet restore
+dotnet build
+```
+
+### 5. Run the tests
+
+```bash
+dotnet test
+```
+
+These commands provide a starting point for local development. Required configuration, service startup order, and test coverage may change as implementation progresses.
+
+## Configuration
+
+The project uses configuration for settings such as:
+
+- JWT signing configuration
+- Database connection details
+- Initial virtual trading balance
+- Trading fee rate
+- Frontend CORS origins
+
+Keep local secrets outside the repository. The committed `.env.example` file should contain placeholders only.
+
+## Development Roadmap
+
+- [ ] Establish the core domain and application layers
+- [ ] Implement market data ingestion
+- [ ] Develop trading and order-processing logic
+- [ ] Add virtual wallet and portfolio management
+- [ ] Integrate real-time market updates
+- [ ] Build the frontend trading interface
+- [ ] Expand unit and integration test coverage
+- [ ] Improve deployment, monitoring, and documentation
+
+## Contributing
+
+This project is under active development. Suggestions, bug reports, and constructive feedback are welcome.
+
+1. Fork the repository.
+2. Create a feature branch.
+3. Make your changes and add tests where appropriate.
+4. Submit a pull request describing your changes.
+
+## Disclaimer
+
+TradingEngine is intended for educational and software development purposes. It is a trading simulation project, not a cryptocurrency exchange or financial service. Virtual trading results do not represent guaranteed real-world performance.
+
+## License
+
+No license has been specified yet. Until a license is added, the repository should not be assumed to grant permission to reuse, modify, or distribute its code.
